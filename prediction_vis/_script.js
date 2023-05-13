@@ -1,19 +1,16 @@
 var data = [
-  {"year": 2001,    "debt": 31.4},
-  {"year": 2002,    "debt": 32.6},
-  {"year": 2003,    "debt": 34.5},
-  {"year": 2004,    "debt": 35.5},
-  {"year": 2005,    "debt": 35.6},
-  {"year": 2006,    "debt": 35.3},
-  {"year": 2007,    "debt": 35.2},
-  {"year": 2008,    "debt": 39.3},
-  {"year": 2009,    "debt": 52.3},
-  {"year": 2010,    "debt": 60.9},
-  {"year": 2011,    "debt": 65.9},
-  {"year": 2012,    "debt": 70.4},
-  {"year": 2013,    "debt": 72.6},
-  {"year": 2014,    "debt": 74.4},
-  {"year": 2015,    "debt": 73.6},
+  {"year": 2016,    "revenue": 95.00},
+  {"year": 2017,    "revenue": 131.00},
+  {"year": 2018,    "revenue": 172.80},
+  {"year": 2019,    "revenue": 214.40},
+  {"year": 2020,    "revenue": 267.60},
+  {"year": 2021,    "revenue": 342.60},
+  {"year": 2022,    "revenue": 414.90},
+  {"year": 2023,    "revenue": 525.60},
+  {"year": 2024,    "revenue": 617.00},
+  {"year": 2025,    "revenue": 707.90},
+  {"year": 2026,    "revenue": 796.00},
+  {"year": 2027,    "revenue": 881.80}
 ]
 
 var ƒ = d3.f
@@ -28,33 +25,42 @@ var c = d3.conventions({
 
 c.svg.append('rect').at({width: c.width, height: c.height, opacity: 0})
 
-c.x.domain([2001, 2015])
-c.y.domain([0, 100])
+c.x.domain([2016, 2027])
+c.y.domain([0, 1000])
 
 c.xAxis.ticks(4).tickFormat(ƒ())
-c.yAxis.ticks(5).tickFormat(d => d + '%')
+c.yAxis.ticks(5).tickFormat(d3.format("$,.2f"));
 
-var area = d3.area().x(ƒ('year', c.x)).y0(ƒ('debt', c.y)).y1(c.height)
-var line = d3.area().x(ƒ('year', c.x)).y(ƒ('debt', c.y))
+var area = d3.area().x(ƒ('year', c.x)).y0(ƒ('revenue', c.y)).y1(c.height)
+var line = d3.area().x(ƒ('year', c.x)).y(ƒ('revenue', c.y))
 
 var clipRect = c.svg
   .append('clipPath#clip')
   .append('rect')
-  .at({width: c.x(2008) - 2, height: c.height})
+  .at({x: c.x(2016), y: 0, width: c.x(2020) - c.x(2016), height: c.height});
 
 var correctSel = c.svg.append('g').attr('clip-path', 'url(#clip)')
 
-correctSel.append('path.area').at({d: area(data)})
-correctSel.append('path.line').at({d: line(data)})
+correctSel.append('path.area').datum(data).at({d: area})
+correctSel.append('path.line').datum(data).at({d: line})
+
 yourDataSel = c.svg.append('path.your-line')
 
 c.drawAxis()
+c.svg.append("text")
+  .attr("transform", "rotate(-90)")
+  .attr("y", 0 - c.margin.left)
+  .attr("x", 0 - (c.height / 2))
+  .attr("dy", "1em")
+  .style("text-anchor", "middle")
+  .style("font-family", "monospace") 
+  .text("in billion USD (US $)");
 
 yourData = data
-  .map(function(d){ return {year: d.year, debt: d.debt, defined: 0} })
+  .map(function(d){ return {year: d.year, revenue: d.revenue, defined: 0} })
   .filter(function(d){
-    if (d.year == 2008) d.defined = true
-    return d.year >= 2008
+    if (d.year == 2020) d.defined = true
+    return d.year >= 2020
   })
 
 var completed = false
@@ -62,12 +68,22 @@ var completed = false
 var drag = d3.drag()
   .on('drag', function(){
     var pos = d3.mouse(this)
-    var year = clamp(2009, 2016, c.x.invert(pos[0]))
-    var debt = clamp(0, c.y.domain()[1], c.y.invert(pos[1]))
+    var year = clamp(2016, 2027, c.x.invert(pos[0]))
+    var revenue;
+
+    if (year === 2020) {
+      revenue = data.find(d => d.year === 2020).revenue; // restrict revenue to actual value for 2020
+    } else {
+      revenue = clamp(0, c.y.domain()[1], c.y.invert(pos[1])); // allow revenue values for other years to be changed
+    }
 
     yourData.forEach(function(d){
       if (Math.abs(d.year - year) < .5){
-        d.debt = debt
+        if (d.year === 2020) {
+          d.revenue = data.find(d => d.year === 2020).revenue; // keep revenue fixed for 2020
+        } else {
+          d.revenue = revenue;
+        }
         d.defined = true
       }
     })
@@ -76,7 +92,7 @@ var drag = d3.drag()
 
     if (!completed && d3.mean(yourData, ƒ('defined')) == 1){
       completed = true
-      clipRect.transition().duration(1000).attr('width', c.x(2015))
+      clipRect.transition().duration(1000).attr('width', c.x(2027))
     }
   })
 
