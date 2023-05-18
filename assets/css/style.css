@@ -184,19 +184,19 @@ header {
 }
 
 .hs1 {
-    color: rgba(37, 225, 143, 0.2);
+    color: rgba(132,165,157);
 }
 
 .hs2 {
-    color: rgba(241, 213, 68, 0.2);
+    color: rgb(247,191,211);
 }
 
 .hs3 {
-    color: rgba(55, 129, 97, 0.2);
+    color: rgba(242, 132, 130);
 }
 
 .hs4 {
-    color: rgba(10, 10, 11, 0.2);
+    color: rgba(245,202,195);
 }
 
 .text-link {

@@ -23,7 +23,7 @@ body{
 }
 
 .your-line{
-  stroke: #f0f;
+  stroke: rgb(74, 156, 194);
   stroke-width: 3;
-  stroke-dash-array: 5 5;
+  stroke-dasharray: 5 5;
 }
